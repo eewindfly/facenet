@@ -129,7 +129,7 @@ def read_and_augument_data(image_list, label_list, image_size, batch_size, max_n
             image = tf.image.random_flip_left_right(image)
         #pylint: disable=no-member
         image.set_shape((image_size, image_size, 3))
-        image = tf.image.per_image_whitening(image)
+        image = tf.image.per_image_standardization(image)
         images_and_labels.append([image, label])
 
     image_batch, label_batch = tf.train.batch_join(
