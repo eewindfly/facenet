@@ -5,7 +5,7 @@ python facenet_train_classifier.py \
   --data_dir ~/datasets/CASIA/crop \
   --image_size 160 \
   --model_def models.inception_resnet_v1 \
-  --lfw_dir ~/datasets/lfw/crop \
+  --lfw_dir ~/datasets/LFW/crop \
   --weight_decay 2e-4 \
   --optimizer RMSPROP \
   --learning_rate -1 \
