@@ -15,4 +15,5 @@ python facenet_train_classifier.py \
   --random_flip \
   --learning_rate_schedule_file ../data/learning_rate_schedule_classifier_long.txt \
   --center_loss_factor 2e-4 \
-  --lfw_file_ext jpg
+  --lfw_file_ext jpg \
+  --log_histograms
