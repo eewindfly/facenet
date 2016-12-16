@@ -2,7 +2,7 @@ cd src
 python facenet_train_classifier.py \
   --logs_base_dir ~/logs/facenet/ \
   --models_base_dir ~/models/facenet/ \
-  --data_dir ~/datasets/CASIA/crop \
+  --data_dir ~/datasets/VGG_FACE_DATASET/VGG_FACE_DATASET/crop/crop_loost \
   --image_size 160 \
   --model_def models.inception_resnet_v1 \
   --lfw_dir ~/datasets/LFW/crop \
