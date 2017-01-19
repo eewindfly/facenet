@@ -16,4 +16,5 @@ python facenet_train_classifier.py \
   --learning_rate_schedule_file ../data/learning_rate_schedule_classifier_long.txt \
   --center_loss_factor 2e-4 \
   --lfw_file_ext jpg \
-  --log_histograms
+  --log_histograms \
+  --gpu_memory_fraction 0.5
