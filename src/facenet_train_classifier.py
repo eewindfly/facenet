@@ -220,7 +220,7 @@ def evaluate(sess, embeddings, labels, actual_issame, batch_size,
     start_time = time.time()
     # Run forward pass to calculate embeddings
     print('Runnning forward pass on LFW images')
-    embedding_size = embeddings.get_shape()[1]
+    embedding_size = embeddings.get_shape()[1] # [0] is batch size
     nrof_images = len(actual_issame)*2
     nrof_batches = nrof_images // batch_size
     emb_array = np.zeros((nrof_images, embedding_size))
