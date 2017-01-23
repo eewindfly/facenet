@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from datetime import datetime
-import os.path
+import os
 import time
 import sys
 import tensorflow as tf
@@ -13,16 +13,27 @@ import argparse
 import tensorflow.contrib.slim as slim
 import facenet
 
+
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def extract_features(args):
 
     # prepare data
     data_dir = args.data_dir
     data_paths = []
+    for abs_root, dirs, files in os.walk(data_dir):
+        for filename in files:
+            ext = filename.split(".")[-1]
+            if ext != 'jpg':
+                continue
+            data_paths += os.path.join(abs_root, filename)
+            break
+        break
+    #debug
+    print "data_paths="+data_paths
 
     # load model
     network = importlib.import_module(args.model_def, 'inference')
-
-    # forward
     with tf.Graph().as_default():
         print('Building evaluation graph')
         label_list = tf.zeros(tf.shape(data_paths))
@@ -35,8 +46,38 @@ def extract_features(args):
             phase_train=False, weight_decay=0.0, reuse=True)
         eval_embeddings = tf.nn.l2_normalize(eval_prelogits, 1, 1e-10, name='embeddings')
 
-    features = []
-    return features
+    # forward
+        # Start running operations on the Graph.
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
+        #sess.run(tf.global_variables_initializer())
+        #sess.run(tf.local_variables_initializer())
+        #tf.train.start_queue_runners(sess=sess)
+
+        embedding_features = sess.run([eval_embeddings], feed_dict={inputs: eval_image_batch})
+        #with sess.as_default():
+        #    # Evaluate
+        #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 
+        #        args.lfw_nrof_folds, log_dir, step)
+
+    return embedding_features
+
+def evaluate(sess, embeddings, labels, actual_issame, batch_size, 
+        seed, nrof_folds, log_dir, step):
+    # Run forward pass to calculate embeddings
+    print('Runnning forward pass on input images')
+    embedding_size = embeddings.get_shape()[1] # [0] is batch size
+    nrof_images = embeddings.get_shape()[0]
+    nrof_batches = nrof_images // batch_size
+    emb_array = np.zeros((nrof_images, embedding_size))
+    for i in range(nrof_batches):
+        t = time.time()
+        emb, lab = sess.run([embeddings, labels])
+        emb_array[lab] = emb
+        print('Batch %d in %.3f seconds' % (i, time.time()-t))
+        
+    _, _, accuracy, val, val_std, far = lfw.evaluate(emb_array, seed, actual_issame, nrof_folds=nrof_folds)
+    
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
