@@ -21,7 +21,7 @@ def extract_features(args, data_paths):
     network = importlib.import_module(args.model_def, 'inference')
     with tf.Graph().as_default():
         print('Building inference graph')
-        label_list = tf.zeros(tf.shape(data_paths))
+        data_labels = tf.zeros(tf.shape(data_paths), dtype=tf.int32)
         eval_image_batch, eval_label_batch = facenet.read_and_augument_data(
             data_paths,
             data_labels,
@@ -77,6 +77,7 @@ def save_features(args, data_paths, feature_batch):
         rel_path = rel_path[:-3] + "bin" # jpg->bin
         feature_path = os.path.join(feature_dir, rel_path)
 
+        #TODO: use mkdir_p
         tf.gfile.MkDir(os.path.dirname(feature_path))
         matio.save_mat(feature_path, feature)
 
@@ -148,12 +149,12 @@ def get_data_paths(data_dir):
     #    #TODO: remove this line
     #    break
     #TODO: fake data, remove it
-    data_paths=["/root/datasets/CASIA/crop/1408216/001.jpg"]
+    data_paths=["/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/Zooey_Deschanel/Zooey_Deschanel_21066.png"]
     data_labels=[0]
     return data_paths
 
 if __name__ == '__main__':
     args = parse_arguments(sys.argv[1:])
-    data_paths = get_data_paths(data_dir)
+    data_paths = get_data_paths(args.data_dir)
     feature_batch = extract_features(args, data_paths)
     save_features(args, data_paths, feature_batch)

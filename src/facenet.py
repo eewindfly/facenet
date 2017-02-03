@@ -105,8 +105,15 @@ def read_images_from_disk(input_queue):
       Two tensors: the decoded image, and the string label.
     """
     label = input_queue[1]
-    file_contents = tf.read_file(input_queue[0])
-    example = tf.image.decode_jpeg(file_contents, channels=3)
+    file_path = input_queue[0]
+    ext = file_path.split('.')[-1]
+    file_contents = tf.read_file(file_path)
+    if ext == "jpg":
+        example = tf.image.decode_jpeg(file_contents, channels=3)
+    elif ext == "png":
+        example = tf.image.decode_png(file_contents, channels=3)
+    else:
+        raise Exception("Unknown file ext", ext)
     return example, label
   
 def random_rotate_image(image):
