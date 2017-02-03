@@ -64,6 +64,7 @@ def extract_features(args):
         #sess.run(tf.local_variables_initializer())
         #tf.train.start_queue_runners(sess=sess)
 
+        print("Ready to test.")
         embedding_features = sess.run([eval_embeddings], feed_dict={inputs: eval_image_batch})
         #with sess.as_default():
         #    # Evaluate
