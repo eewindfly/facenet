@@ -16,34 +16,7 @@ import facenet
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-def extract_features(args):
-
-    # prepare data
-    data_dir = args.data_dir
-    data_paths = []
-    print("input data dir is", data_dir)
-
-    def get_data_paths(data_dir):
-        for abs_root, dirs, files in os.walk(data_dir):
-            print("searching", abs_root)
-            for filename in files:
-                ext = filename.split(".")[-1]
-                if ext != 'jpg':
-                    continue
-                data_path = os.path.join(abs_root, filename)
-                data_paths += data_path
-                #debug
-                print("add data_path", data_path)
-                #TODO: remove this line
-                break
-            #TODO: remove this line
-    	    break
-
-    #data_paths = get_data_paths(data_dir)
-    #TODO: fake data, remove it
-    data_paths=["/root/datasets/CASIA/crop/1408216/001.jpg"]
-    data_labels=[0]
-
+def extract_features(args, data_paths):
     # load model
     network = importlib.import_module(args.model_def, 'inference')
     with tf.Graph().as_default():
@@ -92,24 +65,22 @@ def extract_features(args):
         #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 
         #        args.lfw_nrof_folds, log_dir, step)
 
-    return embedding_features
+    return embedding_features[0]
 
-def evaluate(sess, embeddings, labels, actual_issame, batch_size, 
-        seed, nrof_folds, log_dir, step):
-    # Run forward pass to calculate embeddings
-    print('Runnning forward pass on input images')
-    embedding_size = embeddings.get_shape()[1] # [0] is batch size
-    nrof_images = embeddings.get_shape()[0]
-    nrof_batches = nrof_images // batch_size
-    emb_array = np.zeros((nrof_images, embedding_size))
-    for i in range(nrof_batches):
-        t = time.time()
-        emb, lab = sess.run([embeddings, labels])
-        emb_array[lab] = emb
-        print('Batch %d in %.3f seconds' % (i, time.time()-t))
-        
-    _, _, accuracy, val, val_std, far = lfw.evaluate(emb_array, seed, actual_issame, nrof_folds=nrof_folds)
-    
+import matio
+def save_features(args, data_paths, feature_batch):
+    feature_dir = args.feature_dir
+    data_dir = args.data_dir
+
+    for data_path, feature in zip(data_paths, feature_batch):
+        rel_path = os.path.relpath(data_path, data_dir)
+        rel_path = rel_path[:-3] + "bin" # jpg->bin
+        feature_path = os.path.join(feature_dir, rel_path)
+
+        tf.gfile.MkDir(os.path.dirname(feature_path))
+        matio.save_mat(feature_path, feature)
+
+
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
@@ -123,6 +94,9 @@ def parse_arguments(argv):
     parser.add_argument('--data_dir', type=str,
         help='Path to the data directory containing aligned face patches. Multiple directories are separated with colon.',
         default='~/datasets/facescrub/fs_aligned:~/datasets/casia/casia-webface-aligned')
+    parser.add_argument('--feature_dir', type=str,
+        help='Path to the feature directory containing inferred face embedding features.',
+        default='~/datasets/FaceScrub/features/')
     parser.add_argument('--model_def', type=str,
         help='Model definition. Points to a module containing the definition of the inference graph.', default='models.nn4')
     parser.add_argument('--batch_size', type=int,
@@ -154,5 +128,32 @@ def parse_arguments(argv):
     return parser.parse_args(argv)
   
 
+def get_data_paths(data_dir):
+    # prepare data
+    data_dir = args.data_dir
+    print("input data dir is", data_dir)
+
+    #for abs_root, dirs, files in os.walk(data_dir):
+    #    print("searching", abs_root)
+    #    for filename in files:
+    #        ext = filename.split(".")[-1]
+    #        if ext != 'jpg':
+    #            continue
+    #        data_path = os.path.join(abs_root, filename)
+    #        data_paths += data_path
+    #        #debug
+    #        print("add data_path", data_path)
+    #        #TODO: remove this line
+    #        break
+    #    #TODO: remove this line
+    #    break
+    #TODO: fake data, remove it
+    data_paths=["/root/datasets/CASIA/crop/1408216/001.jpg"]
+    data_labels=[0]
+    return data_paths
+
 if __name__ == '__main__':
-    extract_features(parse_arguments(sys.argv[1:]))
+    args = parse_arguments(sys.argv[1:])
+    data_paths = get_data_paths(data_dir)
+    feature_batch = extract_features(args, data_paths)
+    save_features(args, data_paths, feature_batch)
