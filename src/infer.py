@@ -71,13 +71,22 @@ def extract_features(args):
         # Start running operations on the Graph.
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
-        #sess.run(tf.global_variables_initializer())
-        #sess.run(tf.local_variables_initializer())
-        #tf.train.start_queue_runners(sess=sess)
+        sess.run(tf.global_variables_initializer())
+        sess.run(tf.local_variables_initializer())
+        tf.train.start_queue_runners(sess=sess)
 
-        print("Ready to test.")
-        embedding_features = sess.run([eval_embeddings], feed_dict=None)
-        print("Test finishs.")
+        # Create a saver
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=3)
+        pretrained_model = os.path.expanduser(args.pretrained_model)
+        pretrained_model = tf.train.latest_checkpoint(pretrained_model)
+        print('Restoring pretrained model: %s' % pretrained_model)
+        saver.restore(sess, pretrained_model)
+
+        with sess.as_default():
+            print("Ready to test.")
+            embedding_features = sess.run([eval_embeddings])
+            print("Test finishs.")
+            print("debug", embedding_features)
         #with sess.as_default():
         #    # Evaluate
         #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 

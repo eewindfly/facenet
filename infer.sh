@@ -1,9 +1,9 @@
 cd src
 python infer.py \
-  --pretrained_model ../../models/facenet/20161116-234200 \
+  --pretrained_model ~/models/facenet/20161215-070543 \
   --logs_base_dir ~/logs/facenet/ \
-  --data_dir ~/datasets/CASIA/crop \
-  --image_size 160 \
+  --data_dir ~/datasets/zackhsiao/MegaFace/official_cropped/daniel/FlickrFinal2/ \
+  --image_size 192 \
   --model_def models.inception_resnet_v1 \
   --weight_decay 2e-4 \
   --optimizer RMSPROP \
