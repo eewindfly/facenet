@@ -21,17 +21,28 @@ def extract_features(args):
     # prepare data
     data_dir = args.data_dir
     data_paths = []
-    for abs_root, dirs, files in os.walk(data_dir):
-        for filename in files:
-            ext = filename.split(".")[-1]
-            if ext != 'jpg':
-                continue
-            data_paths += os.path.join(abs_root, filename)
-            break
-        break
-    #debug
-    print("data_paths=")
-    print(data_paths)
+    print("input data dir is", data_dir)
+
+    def get_data_paths(data_dir):
+        for abs_root, dirs, files in os.walk(data_dir):
+            print("searching", abs_root)
+            for filename in files:
+                ext = filename.split(".")[-1]
+                if ext != 'jpg':
+                    continue
+                data_path = os.path.join(abs_root, filename)
+                data_paths += data_path
+                #debug
+                print("add data_path", data_path)
+                #TODO: remove this line
+                break
+            #TODO: remove this line
+    	    break
+
+    #data_paths = get_data_paths(data_dir)
+    #TODO: fake data, remove it
+    data_paths=["/root/datasets/CASIA/crop/1408216/001.jpg"]
+    data_labels=[0]
 
     # load model
     network = importlib.import_module(args.model_def, 'inference')
@@ -40,7 +51,7 @@ def extract_features(args):
         label_list = tf.zeros(tf.shape(data_paths))
         eval_image_batch, eval_label_batch = facenet.read_and_augument_data(
             data_paths,
-            [],
+            data_labels,
             args.image_size,
             1,
             None,
@@ -53,7 +64,7 @@ def extract_features(args):
         eval_image_batch.set_shape((None, args.image_size, args.image_size, 3))
         eval_image_batch = tf.identity(eval_image_batch, name='input')
         eval_prelogits, _ = network.inference(eval_image_batch, 1.0,
-            phase_train=False, weight_decay=0.0, reuse=True)
+            phase_train=False, weight_decay=0.0, reuse=False)
         eval_embeddings = tf.nn.l2_normalize(eval_prelogits, 1, 1e-10, name='embeddings')
 
     # forward
@@ -65,7 +76,8 @@ def extract_features(args):
         #tf.train.start_queue_runners(sess=sess)
 
         print("Ready to test.")
-        embedding_features = sess.run([eval_embeddings], feed_dict={inputs: eval_image_batch})
+        embedding_features = sess.run([eval_embeddings], feed_dict=None)
+        print("Test finishs.")
         #with sess.as_default():
         #    # Evaluate
         #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 
@@ -127,6 +139,8 @@ def parse_arguments(argv):
         help='Exponential decay for tracking of training parameters.', default=0.9999)
     parser.add_argument('--log_histograms', 
         help='Enables logging of weight/bias histograms in tensorboard.', action='store_true')
+    parser.add_argument('--nrof_preprocess_threads', type=int,
+        help='Number of preprocessing (data loading and augumentation) threads.', default=4)
  
     return parser.parse_args(argv)
   
