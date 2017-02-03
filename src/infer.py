@@ -30,15 +30,25 @@ def extract_features(args):
             break
         break
     #debug
-    print "data_paths="+data_paths
+    print("data_paths=")
+    print(data_paths)
 
     # load model
     network = importlib.import_module(args.model_def, 'inference')
     with tf.Graph().as_default():
-        print('Building evaluation graph')
+        print('Building inference graph')
         label_list = tf.zeros(tf.shape(data_paths))
-        eval_image_batch, eval_label_batch = facenet.read_and_augument_data(data_paths, label_list=[], args.image_size,
-            batch_size=1, None, False, False, False, args.nrof_preprocess_threads, shuffle=False)
+        eval_image_batch, eval_label_batch = facenet.read_and_augument_data(
+            data_paths,
+            [],
+            args.image_size,
+            1,
+            None,
+            False,
+            False,
+            False,
+            args.nrof_preprocess_threads,
+            shuffle=False)
         # Node for input images
         eval_image_batch.set_shape((None, args.image_size, args.image_size, 3))
         eval_image_batch = tf.identity(eval_image_batch, name='input')
