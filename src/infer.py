@@ -86,7 +86,7 @@ def extract_features(args):
             print("Ready to test.")
             embedding_features = sess.run([eval_embeddings])
             print("Test finishs.")
-            print("debug", embedding_features)
+            print("debug", embedding_features[0])
         #with sess.as_default():
         #    # Evaluate
         #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 
