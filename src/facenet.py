@@ -97,7 +97,7 @@ def get_image_paths_and_labels(dataset):
     return image_paths_flat, labels_flat
 
 
-def read_images_from_disk(input_queue):
+def read_images_from_disk(input_queue, file_ext='jpg'):
     """Consumes a single filename and label as a ' '-delimited string.
     Args:
       filename_and_label_tensor: A scalar string tensor.
@@ -106,11 +106,10 @@ def read_images_from_disk(input_queue):
     """
     label = input_queue[1]
     file_path = input_queue[0]
-    ext = file_path.split('.')[-1]
     file_contents = tf.read_file(file_path)
-    if ext == "jpg":
+    if file_ext == "jpg" or file_ext == "jpeg":
         example = tf.image.decode_jpeg(file_contents, channels=3)
-    elif ext == "png":
+    elif file_ext == "png":
         example = tf.image.decode_png(file_contents, channels=3)
     else:
         raise Exception("Unknown file ext", ext)
@@ -121,7 +120,7 @@ def random_rotate_image(image):
     return misc.imrotate(image, angle, 'bicubic')
   
 def read_and_augument_data(image_list, label_list, image_size, batch_size, max_nrof_epochs, 
-        random_crop, random_flip, random_rotate, nrof_preprocess_threads, shuffle=True):
+        random_crop, random_flip, random_rotate, nrof_preprocess_threads, shuffle=True, file_ext='jpg'):
     
     images = ops.convert_to_tensor(image_list, dtype=tf.string)
     labels = ops.convert_to_tensor(label_list, dtype=tf.int32)
@@ -132,7 +131,7 @@ def read_and_augument_data(image_list, label_list, image_size, batch_size, max_n
 
     images_and_labels = []
     for _ in range(nrof_preprocess_threads):
-        image, label = read_images_from_disk(input_queue)
+        image, label = read_images_from_disk(input_queue, file_ext)
         if random_rotate:
             image = tf.py_func(random_rotate_image, [image], tf.uint8)
         if random_crop:

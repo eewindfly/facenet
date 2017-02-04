@@ -1,5 +1,6 @@
 cd src
 python infer.py \
+  --file_ext png \
   --pretrained_model ~/models/facenet/20161215-070543 \
   --logs_base_dir ~/logs/facenet/ \
   --data_dir ~/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/ \

@@ -32,7 +32,8 @@ def extract_features(args, data_paths):
             False,
             False,
             args.nrof_preprocess_threads,
-            shuffle=False)
+            shuffle=False,
+            file_ext=args.file_ext)
         # Node for input images
         eval_image_batch.set_shape((None, args.image_size, args.image_size, 3))
         eval_image_batch = tf.identity(eval_image_batch, name='input')
@@ -125,6 +126,8 @@ def parse_arguments(argv):
         help='Enables logging of weight/bias histograms in tensorboard.', action='store_true')
     parser.add_argument('--nrof_preprocess_threads', type=int,
         help='Number of preprocessing (data loading and augumentation) threads.', default=4)
+    parser.add_argument('--file_ext', type=str,
+        help='The file extension for the dataset.', default='jpg', choices=['jpg', 'png'])
  
     return parser.parse_args(argv)
   
