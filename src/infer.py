@@ -22,12 +22,13 @@ def extract_features(args, data_paths):
     with tf.Graph().as_default():
         print('Building inference graph')
         data_labels = tf.zeros(tf.shape(data_paths), dtype=tf.int32)
+        batch_size = 1000
         eval_image_batch, eval_label_batch = facenet.read_and_augument_data(
             data_paths,
             data_labels,
             args.image_size,
+            batch_size,
             1,
-            None,
             False,
             False,
             False,
@@ -56,20 +57,27 @@ def extract_features(args, data_paths):
         print('Restoring pretrained model: %s' % pretrained_model)
         saver.restore(sess, pretrained_model)
 
+        embedding_features = []
         with sess.as_default():
             print("Ready to test.")
-            embedding_features = sess.run([eval_embeddings])
+            nrof_images = data_labels.get_shape().as_list()[0]
+            import math
+            nrof_batches = int(math.ceil(nrof_images / float(batch_size)))
+            print("batches", nrof_batches)
+            for i in range(nrof_batches):
+                embedding_feature_batch = sess.run([eval_embeddings])
+                if i == 0:
+                    embedding_features = embedding_feature_batch[0]
+                else:
+                    embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
             print("Test finishs.")
-            print("debug", embedding_features[0])
-        #with sess.as_default():
-        #    # Evaluate
-        #    evaluate(sess, eval_embeddings, eval_label_batch, actual_issame, args.lfw_batch_size, args.seed, 
-        #        args.lfw_nrof_folds, log_dir, step)
 
-    return embedding_features[0]
+    print("debug", embedding_features)
+    return embedding_features
 
-import matio
 def save_features(args, data_paths, feature_batch):
+    import matio
+
     feature_dir = args.feature_dir
     data_dir = args.data_dir
 
@@ -78,8 +86,7 @@ def save_features(args, data_paths, feature_batch):
         rel_path = rel_path[:-3] + "bin" # jpg->bin
         feature_path = os.path.join(feature_dir, rel_path)
 
-        #TODO: use mkdir_p
-        tf.gfile.MkDir(os.path.dirname(feature_path))
+        tf.gfile.MakeDirs(os.path.dirname(feature_path))
         matio.save_mat(feature_path, feature)
 
 
@@ -131,29 +138,28 @@ def parse_arguments(argv):
  
     return parser.parse_args(argv)
   
-
 def get_data_paths(data_dir):
     # prepare data
     data_dir = args.data_dir
     print("input data dir is", data_dir)
 
-    #for abs_root, dirs, files in os.walk(data_dir):
-    #    print("searching", abs_root)
-    #    for filename in files:
-    #        ext = filename.split(".")[-1]
-    #        if ext != 'jpg':
-    #            continue
-    #        data_path = os.path.join(abs_root, filename)
-    #        data_paths += data_path
-    #        #debug
-    #        print("add data_path", data_path)
-    #        #TODO: remove this line
-    #        break
-    #    #TODO: remove this line
-    #    break
+    data_paths = []
+    for abs_root, dirs, files in os.walk(data_dir):
+        print("searching", abs_root)
+        for filename in files:
+            ext = filename.split(".")[-1]
+            if ext != 'jpg' and ext != 'png':
+                continue
+            data_path = os.path.join(abs_root, filename)
+            data_paths.append(data_path)
+            #debug
+            print("add data_path", data_path)
+        #TODO: remove this line
+        #if abs_root == "/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/":
+        #    continue
+        #break
     #TODO: fake data, remove it
-    data_paths=["/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/Zooey_Deschanel/Zooey_Deschanel_21066.png"]
-    data_labels=[0]
+    #data_paths=["/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/Zooey_Deschanel/Zooey_Deschanel_21066.png"]
     return data_paths
 
 if __name__ == '__main__':

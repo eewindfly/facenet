@@ -1,4 +1,4 @@
-FROM gcr.io/tensorflow/tensorflow:latest-devel-gpu
+FROM gcr.io/tensorflow/tensorflow:0.12.1-devel-gpu
 
 # Install system dependancy
 RUN apt-get update && apt-get install -y --no-install-recommends \
