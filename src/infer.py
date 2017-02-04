@@ -22,12 +22,11 @@ def extract_features(args, data_paths):
     with tf.Graph().as_default():
         print('Building inference graph')
         data_labels = tf.zeros(tf.shape(data_paths), dtype=tf.int32)
-        batch_size = 1000
         eval_image_batch, eval_label_batch = facenet.read_and_augument_data(
             data_paths,
             data_labels,
             args.image_size,
-            batch_size,
+            args.batch_size,
             1,
             False,
             False,
@@ -62,14 +61,16 @@ def extract_features(args, data_paths):
             print("Ready to test.")
             nrof_images = data_labels.get_shape().as_list()[0]
             import math
-            nrof_batches = int(math.ceil(nrof_images / float(batch_size)))
-            print("batches", nrof_batches)
+            nrof_batches = int(math.ceil(nrof_images / float(args.batch_size)))
+            print("num_batches", nrof_batches)
             for i in range(nrof_batches):
+                t = time.time()
                 embedding_feature_batch = sess.run([eval_embeddings])
                 if i == 0:
                     embedding_features = embedding_feature_batch[0]
                 else:
                     embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
+                print('Batch %d in %.3f seconds' % (i, time.time()-t))
             print("Test finishs.")
 
     print("debug", embedding_features)
