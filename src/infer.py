@@ -156,11 +156,9 @@ def get_data_paths(data_dir):
             #debug
             print("add data_path", data_path)
         #TODO: remove this line
-        #if abs_root == "/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/":
-        #    continue
-        #break
-    #TODO: fake data, remove it
-    #data_paths=["/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/Zooey_Deschanel/Zooey_Deschanel_21066.png"]
+        if abs_root == "/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/":
+            continue
+        break
     return data_paths
 
 if __name__ == '__main__':
