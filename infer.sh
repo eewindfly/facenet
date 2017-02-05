@@ -6,6 +6,7 @@ python infer.py \
   --data_dir ~/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/ \
   --feature_dir ~/datasets/zackhsiao/FaceScrub/features/InceptionResnetV1wCenterLoss/ \
   --image_size 192 \
+  --batch_size 200 \
   --model_def models.inception_resnet_v1 \
   --weight_decay 2e-4 \
   --optimizer RMSPROP \
