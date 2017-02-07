@@ -140,8 +140,7 @@ def main(args):
             eval_image_batch = tf.identity(eval_image_batch, name='input')
             eval_prelogits, _ = network.inference(eval_image_batch, 1.0, 
                 phase_train=False, weight_decay=0.0, reuse=True)
-            #eval_embeddings = tf.nn.l2_normalize(eval_prelogits, 1, 1e-10, name='embeddings')
-            eval_embeddings = tf.identity(eval_prelogits)
+            eval_embeddings = tf.nn.l2_normalize(eval_prelogits, 1, 1e-10, name='embeddings')
 
         # Create a saver
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=3)
