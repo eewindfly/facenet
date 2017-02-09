@@ -37,9 +37,8 @@ import matplotlib.pyplot as plt
 from sklearn.cross_validation import KFold
 from scipy import interpolate
 from tensorflow.python.training import training
-
-#import h5py
-
+import random
+import re
 
 def triplet_loss(anchor, positive, negative, alpha):
     """Calculate the triplet loss according to the FaceNet paper
@@ -96,6 +95,11 @@ def get_image_paths_and_labels(dataset):
         labels_flat += [i] * len(dataset[i].image_paths)
     return image_paths_flat, labels_flat
 
+def shuffle_examples(image_paths, labels):
+    shuffle_list = list(zip(image_paths, labels))
+    random.shuffle(shuffle_list)
+    image_paths_shuff, labels_shuff = zip(*shuffle_list)
+    return image_paths_shuff, labels_shuff
 
 def read_images_from_disk(input_queue, file_ext='jpg'):
     """Consumes a single filename and label as a ' '-delimited string.
@@ -380,23 +384,23 @@ def get_model_filenames(model_dir):
     elif len(meta_files)>1:
         raise ValueError('There should not be more than one meta file in the model directory (%s)' % model_dir)
     meta_file = meta_files[0]
-    ckpt_files = [s for s in files if 'ckpt' in s]
-    if len(ckpt_files)==0:
-        raise ValueError('No checkpoint file found in the model directory (%s)' % model_dir)
-    elif len(ckpt_files)==1:
-        ckpt_file = ckpt_files[0]
-    else:
-        ckpt_iter = [(s,int(s.split('-')[-1])) for s in ckpt_files if 'ckpt' in s]
-        sorted_iter = sorted(ckpt_iter, key=lambda tup: tup[1])
-        ckpt_file = sorted_iter[-1][0]
+    meta_files = [s for s in files if '.ckpt' in s]
+    max_step = -1
+    for f in files:
+        step_str = re.match(r'(^model-[\w\- ]+.ckpt-(\d+))', f)
+        if step_str is not None and len(step_str.groups())>=2:
+            step = int(step_str.groups()[1])
+            if step > max_step:
+                max_step = step
+                ckpt_file = step_str.groups()[0]
     return meta_file, ckpt_file
 
-def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, seed, nrof_folds=10):
+def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_folds=10):
     assert(embeddings1.shape[0] == embeddings2.shape[0])
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
     nrof_thresholds = len(thresholds)
-    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=True, random_state=seed)
+    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=False)
     
     tprs = np.zeros((nrof_folds,nrof_thresholds))
     fprs = np.zeros((nrof_folds,nrof_thresholds))
@@ -442,12 +446,12 @@ def plot_roc(fpr, tpr, label):
     plt.grid(True)
     plt.show()
   
-def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_target, seed, nrof_folds=10):
+def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_target, nrof_folds=10):
     assert(embeddings1.shape[0] == embeddings2.shape[0])
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
     nrof_thresholds = len(thresholds)
-    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=True, random_state=seed)
+    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=False)
     
     val = np.zeros(nrof_folds)
     far = np.zeros(nrof_folds)
