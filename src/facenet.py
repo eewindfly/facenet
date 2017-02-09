@@ -137,6 +137,7 @@ def read_and_augument_data(image_list, label_list, image_size, batch_size, max_n
         if random_crop:
             image = tf.random_crop(image, [image_size, image_size, 3])
         else:
+            #TODO: use a non-distortion version
             #image = tf.image.resize_image_with_crop_or_pad(image, image_size, image_size)
             image = tf.image.resize_images(image, [image_size, image_size])
         if random_flip:

@@ -95,8 +95,6 @@ def save_features(args, data_paths, feature_batch):
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--logs_base_dir', type=str, 
-        help='Directory where to write event logs.', default='~/logs/facenet')
     parser.add_argument('--gpu_memory_fraction', type=float,
         help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
     parser.add_argument('--pretrained_model', type=str,
@@ -113,23 +111,9 @@ def parse_arguments(argv):
         help='Number of images to process in a batch.', default=90)
     parser.add_argument('--image_size', type=int,
         help='Image size (height, width) in pixels.', default=96)
-    parser.add_argument('--epoch_size', type=int,
-        help='Number of batches per epoch.', default=1000)
     parser.add_argument('--random_crop', 
         help='Performs random cropping of training images. If false, the center image_size pixels from the training images are used. ' +
          'If the size of the images in the data directory is equal to image_size no cropping is performed', action='store_true')
-    parser.add_argument('--weight_decay', type=float,
-        help='L2 weight regularization.', default=0.0)
-    parser.add_argument('--decov_loss_factor', type=float,
-        help='DeCov loss factor.', default=0.0)
-    parser.add_argument('--center_loss_factor', type=float,
-        help='Center loss factor.', default=0.0)
-    parser.add_argument('--center_loss_alfa', type=float,
-        help='Center update rate for center loss.', default=0.95)
-    parser.add_argument('--optimizer', type=str, choices=['ADAGRAD', 'ADADELTA', 'ADAM', 'RMSPROP', 'MOM'],
-        help='The optimization algorithm to use', default='ADAGRAD')
-    parser.add_argument('--moving_average_decay', type=float,
-        help='Exponential decay for tracking of training parameters.', default=0.9999)
     parser.add_argument('--log_histograms', 
         help='Enables logging of weight/bias histograms in tensorboard.', action='store_true')
     parser.add_argument('--nrof_preprocess_threads', type=int,
