@@ -139,10 +139,6 @@ def get_data_paths(data_dir):
             data_paths.append(data_path)
             #debug
             print("add data_path", data_path)
-        #TODO: remove this line
-        if abs_root == "/root/datasets/zackhsiao/FaceScrub/test_cropped/facescrub_aligned/":
-            continue
-        break
     return data_paths
 
 if __name__ == '__main__':
