@@ -52,9 +52,10 @@ def extract_features(args, data_paths):
         # Create a saver
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=3)
         pretrained_model = os.path.expanduser(args.pretrained_model)
-        pretrained_model = tf.train.latest_checkpoint(pretrained_model)
+        #pretrained_model = tf.train.latest_checkpoint(pretrained_model)
         print('Restoring pretrained model: %s' % pretrained_model)
         saver.restore(sess, pretrained_model)
+        print('Restored pretrained model: %s' % pretrained_model)
 
         embedding_features = []
         with sess.as_default():
