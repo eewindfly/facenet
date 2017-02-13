@@ -85,7 +85,7 @@ def save_features(args, data_paths, feature_batch):
 
     for data_path, feature in zip(data_paths, feature_batch):
         rel_path = os.path.relpath(data_path, data_dir)
-        rel_path = rel_path[:-3] + "bin" # jpg->bin
+        rel_path = rel_path + ".bin" # xxx.jpg->xxx.jpg.bin
         feature_path = os.path.join(feature_dir, rel_path)
 
         tf.gfile.MakeDirs(os.path.dirname(feature_path))
