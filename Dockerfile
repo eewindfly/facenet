@@ -34,8 +34,12 @@ RUN git clone https://github.com/Itseez/opencv.git && \
     rm -rf /opt/opencv && \
     ldconfig
 
-# install python packages
-RUN pip install pillow
-
 WORKDIR /root/workspace
 RUN git clone https://github.com/tensorflow/models/
+
+# install python packages
+WORKDIR /tmp
+ADD requirements.txt .
+RUN pip install -r requirements.txt
+
+WORKDIR /root/workspace

@@ -200,7 +200,7 @@ def main(args):
 
             if pretrained_model:
                 print('Restoring pretrained model: %s' % pretrained_model)
-                saver.restore(sess, tf.train.latest_checkpoint(pretrained_model))
+                saver.restore(sess, pretrained_model)
 
             # Training and validation loop
             print('Running training')
