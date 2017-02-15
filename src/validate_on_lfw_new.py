@@ -83,11 +83,13 @@ def main(args):
             nrof_batches = nrof_images // args.lfw_batch_size
             emb_array = np.zeros((nrof_images, embedding_size))
             lab_array = np.zeros((nrof_images,))
-            for _ in range(nrof_batches):
+            for i in range(nrof_batches):
+                t = time.time()
                 feed_dict = {phase_train_placeholder:False, batch_size_placeholder:args.lfw_batch_size}
                 emb, lab = sess.run([embeddings, label_batch], feed_dict=feed_dict)
                 lab_array[lab] = lab
                 emb_array[lab] = emb
+                print('Batch %d / %d in %.3f seconds' % (i, nrof_batches, time.time()-t))
                 
             assert np.array_equal(lab_array, np.arange(nrof_images))==True, 'Wrong labels used for evaluation, possibly caused by training examples left in the input pipeline'
         
