@@ -42,6 +42,10 @@ def main(args):
     with tf.Graph().as_default():
       
         with tf.Session() as sess:
+            # Start running operations on the Graph.
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            tf.train.start_queue_runners(sess=sess)
             
             # Read the file containing the pairs used for testing
             pairs = lfw.read_pairs(os.path.expanduser(args.lfw_pairs))
