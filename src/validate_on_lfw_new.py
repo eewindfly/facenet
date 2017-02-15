@@ -36,17 +36,13 @@ import facenet
 import lfw
 import os
 import sys
+import time
 
 def main(args):
   
     with tf.Graph().as_default():
       
         with tf.Session() as sess:
-            # Start running operations on the Graph.
-            sess.run(tf.global_variables_initializer())
-            sess.run(tf.local_variables_initializer())
-            tf.train.start_queue_runners(sess=sess)
-            
             # Read the file containing the pairs used for testing
             pairs = lfw.read_pairs(os.path.expanduser(args.lfw_pairs))
 
@@ -70,6 +66,11 @@ def main(args):
             
             enqueue_op = tf.get_default_graph().get_operation_by_name("enqueue_op")
             label_batch = tf.get_default_graph().get_tensor_by_name("label_batch:0")
+            
+            # Start running operations on the Graph.
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            tf.train.start_queue_runners(sess=sess)
             
             # Run forward pass to calculate embeddings
             print('Runnning forward pass on LFW images')
