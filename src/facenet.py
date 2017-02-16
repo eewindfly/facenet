@@ -333,11 +333,14 @@ class ImageClass():
 def get_dataset(paths):
     dataset = []
     for path in paths.split(':'):
+        print("Searching dataset", path)
         path_exp = os.path.expanduser(path)
         classes = os.listdir(path_exp)
         classes.sort()
         nrof_classes = len(classes)
+        print("Search done, total number of classes is", nrof_classes)
         for i in range(nrof_classes):
+            print("Searching class", i)
             class_name = classes[i]
             facedir = os.path.join(path_exp, class_name)
             if os.path.isdir(facedir):

@@ -57,9 +57,11 @@ def main(args):
         os.makedirs(model_dir)
 
     # Store some git revision info in a text file in the log directory
+    print('Store revision info')
     src_path,_ = os.path.split(os.path.realpath(__file__))
     facenet.store_revision_info(src_path, log_dir, ' '.join(sys.argv))
 
+    print('Get dataset')
     np.random.seed(seed=args.seed)
     random.seed(args.seed)
     train_set = facenet.get_dataset(args.data_dir)
@@ -194,6 +196,7 @@ def main(args):
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
         summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
+        print("Start queue runner")
         tf.train.start_queue_runners(sess=sess)
 
         with sess.as_default():
