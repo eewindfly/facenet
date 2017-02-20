@@ -98,6 +98,7 @@ def main(args):
         index_queue = tf.train.range_input_producer(range_size, num_epochs=None,
                              shuffle=True, seed=None, capacity=32)
         
+        # args.batch_size*args.epoch_size = size/epoch
         index_dequeue_op = index_queue.dequeue_many(args.batch_size*args.epoch_size, 'index_dequeue')
         
         learning_rate_placeholder = tf.placeholder(tf.float32, name='learning_rate')

@@ -56,33 +56,34 @@ def extract_features(args, data_paths):
         saver.restore(sess, pretrained_model)
         print('Restored pretrained model: %s' % pretrained_model)
 
-        embedding_features = []
+        #embedding_features = []
         with sess.as_default():
             print("Ready to test.")
             nrof_images = data_labels.get_shape().as_list()[0]
             import math
             nrof_batches = int(math.ceil(nrof_images / float(args.batch_size)))
             print("num_batches", nrof_batches)
-            for i in range(nrof_batches):
+            for i in xrange(nrof_batches):
                 t = time.time()
                 embedding_feature_batch = sess.run([eval_embeddings])
-                if i == 0:
-                    embedding_features = embedding_feature_batch[0]
-                else:
-                    embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
+                #if i == 0:
+                #    embedding_features = embedding_feature_batch[0]
+                #else:
+                #    embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
                 print('Batch %d in %.3f seconds' % (i, time.time()-t))
+                yield embedding_feature_batch[0]
             print("Test finishs.")
 
-    print("debug", embedding_features)
-    return embedding_features
+    #print("debug", embedding_features)
+    #return embedding_features
 
-def save_features(args, data_paths, feature_batch):
+def save_features(args, data_paths, feature_batch_generator):
     import matio
 
     feature_dir = args.feature_dir
     data_dir = args.data_dir
 
-    for data_path, feature in zip(data_paths, feature_batch):
+    for data_path, feature in zip(data_paths, feature_batch_generator):
         rel_path = os.path.relpath(data_path, data_dir)
         rel_path = rel_path + ".bin" # xxx.jpg->xxx.jpg.bin
         feature_path = os.path.join(feature_dir, rel_path)
@@ -142,5 +143,5 @@ def get_data_paths(data_dir):
 if __name__ == '__main__':
     args = parse_arguments(sys.argv[1:])
     data_paths = get_data_paths(args.data_dir)
-    feature_batch = extract_features(args, data_paths)
-    save_features(args, data_paths, feature_batch)
+    feature_batch_generator = extract_features(args, data_paths)
+    save_features(args, data_paths, feature_batch_generator)
