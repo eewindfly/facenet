@@ -14,7 +14,7 @@ python facenet_train_classifier.py \
   --keep_probability 0.8 \
   --random_crop \
   --random_flip \
-  --learning_rate_schedule_file ../data/learning_rate_schedule_classifier_long.txt \
+  --learning_rate_schedule_file ../data/learning_rate_schedule_classifier_casia.txt \
   --center_loss_factor 2e-4 \
   --lfw_file_ext jpg \
   --log_histograms \
