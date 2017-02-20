@@ -4,7 +4,7 @@ python facenet_train_classifier.py \
   --logs_base_dir ~/logs/facenet/ \
   --models_base_dir ~/models/facenet/ \
   --data_dir ~/datasets/MsFace/MsCeleb_align_crop \
-  --image_size 299 \
+  --image_size 160 \
   --model_def models.inception_resnet_v1 \
   --lfw_dir ~/datasets/LFW/crop \
   --weight_decay 2e-4 \

@@ -1,6 +1,6 @@
 cd src
 python facenet_train_classifier.py \
-  --pretrained_model ~/models/facenet/20170131-234652/model-20170131-234652.ckpt-250000 \
+  --pretrained_model ~/models/facenet/20170131-005910/model-20170131-005910.ckpt-80000 \
   --logs_base_dir ~/logs/facenet/ \
   --models_base_dir ~/models/facenet/ \
   --data_dir ~/datasets/CASIA/crop \
