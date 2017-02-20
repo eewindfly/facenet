@@ -17,7 +17,7 @@ import facenet
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def extract_features(args, data_paths):
-    # load model
+    ### load model ###
     network = importlib.import_module(args.model_def, 'inference')
     with tf.Graph().as_default():
         print('Building inference graph')
@@ -41,7 +41,7 @@ def extract_features(args, data_paths):
             phase_train=False, weight_decay=0.0, reuse=False)
         eval_embeddings = tf.nn.l2_normalize(eval_prelogits, 1, 1e-10, name='embeddings')
 
-    # forward
+    ### forward ###
         # Start running operations on the Graph.
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
@@ -52,7 +52,6 @@ def extract_features(args, data_paths):
         # Create a saver
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=3)
         pretrained_model = os.path.expanduser(args.pretrained_model)
-        #pretrained_model = tf.train.latest_checkpoint(pretrained_model)
         print('Restoring pretrained model: %s' % pretrained_model)
         saver.restore(sess, pretrained_model)
         print('Restored pretrained model: %s' % pretrained_model)
