@@ -138,8 +138,6 @@ def get_data_paths(data_dir):
                 continue
             data_path = os.path.join(abs_root, filename)
             data_paths.append(data_path)
-            #debug
-            print("add data_path", data_path)
     return data_paths
 
 if __name__ == '__main__':
