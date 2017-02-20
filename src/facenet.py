@@ -33,12 +33,12 @@ import tensorflow as tf
 from tensorflow.python.framework import ops
 import numpy as np
 from scipy import misc
-import matplotlib.pyplot as plt
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 from scipy import interpolate
 from tensorflow.python.training import training
 import random
 import re
+
 
 def triplet_loss(anchor, positive, negative, alpha):
     """Calculate the triplet loss according to the FaceNet paper
@@ -403,7 +403,7 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_fold
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
     nrof_thresholds = len(thresholds)
-    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=False)
+    k_fold = KFold(n_splits=nrof_folds, shuffle=False)
     
     tprs = np.zeros((nrof_folds,nrof_thresholds))
     fprs = np.zeros((nrof_folds,nrof_thresholds))
@@ -411,8 +411,9 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_fold
     
     diff = np.subtract(embeddings1, embeddings2)
     dist = np.sum(np.square(diff),1)
+    indices = np.arange(nrof_pairs)
     
-    for fold_idx, (train_set, test_set) in enumerate(folds):
+    for fold_idx, (train_set, test_set) in enumerate(k_fold.split(indices)):
         
         # Find the best threshold for the fold
         acc_train = np.zeros((nrof_thresholds))
@@ -439,30 +440,23 @@ def calculate_accuracy(threshold, dist, actual_issame):
     acc = float(tp+tn)/dist.size
     return tpr, fpr, acc
 
-def plot_roc(fpr, tpr, label):
-    plt.plot(fpr, tpr, label=label)
-    plt.title('Receiver Operating Characteristics')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.legend()
-    plt.plot([0, 1], [0, 1], 'g--')
-    plt.grid(True)
-    plt.show()
+
   
 def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_target, nrof_folds=10):
     assert(embeddings1.shape[0] == embeddings2.shape[0])
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
     nrof_thresholds = len(thresholds)
-    folds = KFold(n=nrof_pairs, n_folds=nrof_folds, shuffle=False)
+    k_fold = KFold(n_splits=nrof_folds, shuffle=False)
     
     val = np.zeros(nrof_folds)
     far = np.zeros(nrof_folds)
     
     diff = np.subtract(embeddings1, embeddings2)
     dist = np.sum(np.square(diff),1)
+    indices = np.arange(nrof_pairs)
     
-    for fold_idx, (train_set, test_set) in enumerate(folds):
+    for fold_idx, (train_set, test_set) in enumerate(k_fold.split(indices)):
       
         # Find the threshold that gives FAR = far_target
         far_train = np.zeros(nrof_thresholds)
@@ -516,4 +510,3 @@ def list_variables(filename):
     variable_map = reader.get_variable_to_shape_map()
     names = sorted(variable_map.keys())
     return names
-  
