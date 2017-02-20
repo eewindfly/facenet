@@ -71,7 +71,9 @@ def extract_features(args, data_paths):
                 #else:
                 #    embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
                 print('Batch %d in %.3f seconds' % (i, time.time()-t))
-                yield embedding_feature_batch[0]
+                for one_example_feature in embedding_feature_batch[0]:
+                    yield one_example_feature
+                #yield embedding_feature_batch[0]
             print("Test finishs.")
 
     #print("debug", embedding_features)
