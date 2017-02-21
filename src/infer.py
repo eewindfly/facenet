@@ -56,7 +56,6 @@ def extract_features(args, data_paths):
         saver.restore(sess, pretrained_model)
         print('Restored pretrained model: %s' % pretrained_model)
 
-        #embedding_features = []
         with sess.as_default():
             print("Ready to test.")
             nrof_images = data_labels.get_shape().as_list()[0]
@@ -66,18 +65,10 @@ def extract_features(args, data_paths):
             for i in xrange(nrof_batches):
                 t = time.time()
                 embedding_feature_batch = sess.run([eval_embeddings])
-                #if i == 0:
-                #    embedding_features = embedding_feature_batch[0]
-                #else:
-                #    embedding_features = np.concatenate((embedding_features, embedding_feature_batch[0]), 0)
                 print('Batch %d in %.3f seconds' % (i, time.time()-t))
                 for one_example_feature in embedding_feature_batch[0]:
                     yield one_example_feature
-                #yield embedding_feature_batch[0]
             print("Test finishs.")
-
-    #print("debug", embedding_features)
-    #return embedding_features
 
 def save_features(args, data_paths, feature_batch_generator):
     import matio
