@@ -38,11 +38,11 @@ import importlib
 import argparse
 import facenet
 import lfw
+import h5py
 import tensorflow.contrib.slim as slim
 from tensorflow.python.ops import data_flow_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
-import h5py
 
 def main(args):
   
@@ -57,9 +57,10 @@ def main(args):
         os.makedirs(model_dir)
 
     # Store some git revision info in a text file in the log directory
-    print('Store revision info')
-    src_path,_ = os.path.split(os.path.realpath(__file__))
-    facenet.store_revision_info(src_path, log_dir, ' '.join(sys.argv))
+    if not args.no_store_revision_info:
+        print('Store revision info')
+        src_path,_ = os.path.split(os.path.realpath(__file__))
+        facenet.store_revision_info(src_path, log_dir, ' '.join(sys.argv))
 
     print('Get dataset')
     np.random.seed(seed=args.seed)
@@ -122,7 +123,7 @@ def main(args):
         for _ in range(nrof_preprocess_threads):
             filenames, label = input_queue.dequeue()
             images = []
-            for filename in tf.unpack(filenames):
+            for filename in tf.unstack(filenames):
                 file_contents = tf.read_file(filename)
                 image = tf.image.decode_png(file_contents)
                 if args.random_rotate:
@@ -154,14 +155,16 @@ def main(args):
         print('Building training graph')
         
         batch_norm_params = {
-            # Decay for the moving averages.
+            # Decay for the moving averages
             'decay': 0.995,
-            # epsilon to prevent 0s in variance.
+            # epsilon to prevent 0s in variance
             'epsilon': 0.001,
             # force in-place updates of mean and variance estimates
             'updates_collections': None,
             # Moving averages ends up in the trainable variables collection
             'variables_collections': [ tf.GraphKeys.TRAINABLE_VARIABLES ],
+            # Only update statistics during training mode
+            'is_training': phase_train_placeholder
         }
         # Build the inference graph
         prelogits, _ = network.inference(image_batch, args.keep_probability, 
@@ -190,7 +193,7 @@ def main(args):
 
         # Calculate the average cross entropy loss across the batch
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            logits, label_batch, name='cross_entropy_per_example')
+            labels=label_batch, logits=logits, name='cross_entropy_per_example')
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
         tf.add_to_collection('losses', cross_entropy_mean)
         
@@ -215,7 +218,8 @@ def main(args):
         sess.run(tf.local_variables_initializer())
         summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
         print("Start queue runner")
-        tf.train.start_queue_runners(sess=sess)
+        coord = tf.train.Coordinator()
+        tf.train.start_queue_runners(coord=coord, sess=sess)
 
         with sess.as_default():
 
@@ -241,6 +245,7 @@ def main(args):
                 if args.lfw_dir:
                     evaluate(sess, enqueue_op, image_paths_placeholder, labels_placeholder, phase_train_placeholder, batch_size_placeholder, 
                         embeddings, label_batch, lfw_paths, actual_issame, args.lfw_batch_size, args.lfw_nrof_folds, log_dir, step, summary_writer)
+    sess.close()
     return model_dir
   
 def find_threshold(var, percentile):
@@ -438,17 +443,19 @@ def parse_arguments(argv):
     parser.add_argument('--log_histograms', 
         help='Enables logging of weight/bias histograms in tensorboard.', action='store_true')
     parser.add_argument('--learning_rate_schedule_file', type=str,
-        help='File containing the learning rate schedule that is used when learning_rate is set to to -1.', default='../data/learning_rate_schedule.txt')
+        help='File containing the learning rate schedule that is used when learning_rate is set to to -1.', default='data/learning_rate_schedule.txt')
     parser.add_argument('--filter_filename', type=str,
         help='File containing image data used for dataset filtering', default='')
     parser.add_argument('--filter_percentile', type=float,
         help='Keep only the percentile images closed to its class center', default=100.0)
     parser.add_argument('--filter_min_nrof_images_per_class', type=int,
         help='Keep only the classes with this number of examples or more', default=0)
+    parser.add_argument('--no_store_revision_info', 
+        help='Disables storing of git revision info in revision_info.txt.', action='store_true')
  
     # Parameters for validation on LFW
     parser.add_argument('--lfw_pairs', type=str,
-        help='The file containing the pairs to use for validation.', default='../data/pairs.txt')
+        help='The file containing the pairs to use for validation.', default='data/pairs.txt')
     parser.add_argument('--lfw_file_ext', type=str,
         help='The file extension for the LFW dataset.', default='png', choices=['jpg', 'png'])
     parser.add_argument('--lfw_dir', type=str,

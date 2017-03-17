@@ -274,6 +274,9 @@ class ONet(Network):
              .fc(10, relu=False, name='conv6-3'))
 
 def create_mtcnn(sess, model_path):
+    if not model_path:
+        model_path,_ = os.path.split(os.path.realpath(__file__))
+
     with tf.variable_scope('pnet'):
         data = tf.placeholder(tf.float32, (None,None,None,3), 'input')
         pnet = PNet({'data':data})
@@ -628,6 +631,8 @@ def bulk_detect_face(images, detection_window_size_ratio, pnet, rnet, onet, thre
             points_per_image = points_per_image[:, pick]
 
             ret.append((image_obj['total_boxes'], points_per_image))
+        else:
+            ret.append(None)
 
         i += onet_input_count
 
@@ -755,7 +760,7 @@ def rerec(bboxA):
     return bboxA
 
 def imresample(img, sz):
-    im_data = cv2.resize(img, (sz[1], sz[0]), interpolation=cv2.INTER_AREA) #pylint: disable=no-member
+    im_data = cv2.resize(img, (sz[1], sz[0]), interpolation=cv2.INTER_AREA) #@UndefinedVariable
     return im_data
 
     # This method is kept for debugging purpose

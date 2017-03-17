@@ -52,10 +52,10 @@ def triplet_loss(anchor, positive, negative, alpha):
       the triplet loss according to the FaceNet paper as a float tensor.
     """
     with tf.variable_scope('triplet_loss'):
-        pos_dist = tf.reduce_sum(tf.square(tf.sub(anchor, positive)), 1)
-        neg_dist = tf.reduce_sum(tf.square(tf.sub(anchor, negative)), 1)
+        pos_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, positive)), 1)
+        neg_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, negative)), 1)
         
-        basic_loss = tf.add(tf.sub(pos_dist,neg_dist), alpha)
+        basic_loss = tf.add(tf.subtract(pos_dist,neg_dist), alpha)
         loss = tf.reduce_mean(tf.maximum(basic_loss, 0.0), 0)
       
     return loss
@@ -67,7 +67,7 @@ def decov_loss(xs):
     x = tf.reshape(xs, [int(xs.get_shape()[0]), -1])
     m = tf.reduce_mean(x, 0, True)
     z = tf.expand_dims(x-m, 2)
-    corr = tf.reduce_mean(tf.batch_matmul(z, tf.transpose(z, perm=[0,2,1])), 0)
+    corr = tf.reduce_mean(tf.matmul(z, tf.transpose(z, perm=[0,2,1])), 0)
     corr_frob_sqr = tf.reduce_sum(tf.square(corr))
     corr_diag_sqr = tf.reduce_sum(tf.square(tf.diag_part(corr)))
     loss = 0.5*(corr_frob_sqr - corr_diag_sqr)
@@ -238,8 +238,8 @@ def prewhiten(x):
 
 def crop(image, random_crop, image_size):
     if image.shape[1]>image_size:
-        sz1 = image.shape[1]//2
-        sz2 = image_size//2
+        sz1 = int(image.shape[1]//2)
+        sz2 = int(image_size//2)
         if random_crop:
             diff = sz1-sz2
             (h, v) = (np.random.randint(-diff, diff+1), np.random.randint(-diff, diff+1))
